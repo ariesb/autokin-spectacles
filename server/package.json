@@ -1,0 +1,28 @@
+{
+  "name": "autokin-spectacles-server",
+  "version": "0.1.0",
+  "description": "Image comparison productivity tool and companion for Autokin automation testing",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "autokin",
+    "image",
+    "comparison",
+    "automation"
+  ],
+  "author": "Aries Beltran <me@ariesb.com>",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.1.5",
+    "extract-zip": "^1.6.7",
+    "passport": "^0.4.0",
+    "passport-gitlab2": "^5.0.0",
+    "pixelmatch": "^5.0.2",
+    "pngjs": "^3.4.0",
+    "winston": "^3.2.1"
+  }
+}
