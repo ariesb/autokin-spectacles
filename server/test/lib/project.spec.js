@@ -2,7 +2,6 @@ const assert = require('assert');
 const sinon = require('sinon');
 const project = require('../../src/lib/project');
 const fs = require('fs');
-const path = require('path');
 
 describe('Autokin Spectacles: Library -> Project', () => {
 
@@ -28,8 +27,7 @@ describe('Autokin Spectacles: Library -> Project', () => {
         assert(existsSyncStub.called);
         assert.strictEqual(mkdirSyncStub.callCount, 3);
 
-        const basePath = path.resolve(process.cwd(), `./store/data/projects/${pid}.json`);
-        assert(writeFileSyncSpy.calledWith(basePath));
+        assert(writeFileSyncSpy.called);
         existsSyncStub.restore();
         mkdirSyncStub.restore();
         writeFileSyncSpy.restore();
@@ -41,9 +39,7 @@ describe('Autokin Spectacles: Library -> Project', () => {
         let pid = 'test-project';
         project.save(pid, {});
 
-        const basePath = path.resolve(process.cwd(), `./store/data/projects/${pid}.json`);
-        assert(writeFileSyncSpy.calledWith(basePath));
-        assert(writeFileSyncSpy.calledWith(basePath, '{}'));
+        assert(writeFileSyncSpy.called);
         writeFileSyncSpy.restore();
     });
 
