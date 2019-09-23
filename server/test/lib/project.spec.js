@@ -19,28 +19,27 @@ describe('Autokin Spectacles: Library -> Project', () => {
     it('should be able to create project artifacts if new', () => {
         let existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
         let mkdirSyncStub = sinon.stub(fs, 'mkdirSync');
-        let writeFileSyncSpy = sinon.spy(fs, 'writeFileSync');
+        let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
 
         let pid = 'test-project';
         project.makeIfNotExists(pid);
 
         assert(existsSyncStub.called);
         assert.strictEqual(mkdirSyncStub.callCount, 3);
-
-        assert(writeFileSyncSpy.called);
-        existsSyncStub.restore();
-        mkdirSyncStub.restore();
-        writeFileSyncSpy.restore();
+        assert(writeFileSyncStub.called);
+        fs.existsSync.restore();
+        fs.mkdirSync.restore();
+        fs.writeFileSync.restore();
     });
 
     it('should be able to write project data', () => {
-        let writeFileSyncSpy = sinon.spy(fs, 'writeFileSync');
+        let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
 
         let pid = 'test-project';
         project.save(pid, {});
 
-        assert(writeFileSyncSpy.called);
-        writeFileSyncSpy.restore();
+        assert(writeFileSyncStub.called);
+        fs.writeFileSync.restore();
     });
 
     it('should be able to read project data', () => {
