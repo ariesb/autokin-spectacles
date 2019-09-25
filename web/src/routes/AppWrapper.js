@@ -37,7 +37,7 @@ const  AppWrapper = () => {
                 <ControlCenter/>
                 <section className="content">
                     <Route path="/" exact={true} component={userIsAuthenticated(Home)} />
-                    <Route path="/:pid/jobs/:jid" component={userIsAuthenticated(Jobs)} />
+                    <Route path="/:pid/:fid/jobs/:jid" component={userIsAuthenticated(Jobs)} />
                     <Route path="/login" key="gitlab-login" component={userIsNotAuthenticated(Login)} />
                     <Route path="/authorise/:token" component={userIsNotAuthenticated(Authorise)} />
                 </section>

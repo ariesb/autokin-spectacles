@@ -43,10 +43,11 @@ describe('Autokin Spectacles: Library -> Job', () => {
     it('should be able to update job data', function () {
         let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
         let pid = 'test-project';
+        let fid = 'test-feature';
         let jid = '88dd6d34';
-        job.update({ pid, jid, data: {} });
+        job.update({ pid, fid, jid, data: {} });
 
-        const basePath = path.resolve(process.cwd(), `./store/images/${pid}/jobs/${jid}/results.json`);
+        const basePath = path.resolve(process.cwd(), `./store/images/${pid}/${fid}/jobs/${jid}/results.json`);
         assert(writeFileSyncStub.calledWith(basePath));
         assert(writeFileSyncStub.calledWith(basePath, '{}'));
         writeFileSyncStub.restore();
@@ -55,8 +56,9 @@ describe('Autokin Spectacles: Library -> Job', () => {
     it('should be able to check if job exists', function () {
         let existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
         let pid = 'test-project';
+        let fid = 'test-feature';
         let jid = '88dd6d34';
-        let jobExists = job.exists({ pid, jid });
+        let jobExists = job.exists({ pid, fid, jid });
 
         assert(existsSyncStub.called);
         assert(jobExists);
@@ -64,16 +66,58 @@ describe('Autokin Spectacles: Library -> Job', () => {
     });
 
     it('should be able to read existing job data', () => {
-        let readFileSyncStub = sinon.stub(fs, 'readFileSync').returns('{}');
+        let readFileSyncStub = sinon.stub(fs, 'readFileSync').returns('{ "screens":[] }');
         let existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
 
         let pid = 'test-project';
+        let fid = 'test-feature';
         let jid = '88dd6d34';
-        let data = job.get({ pid, jid });
+        let data = job.get({ pid, fid, jid }, {
+            users: {}
+        });
 
         assert(existsSyncStub.called);
         assert(readFileSyncStub.called);
-        assert.deepEqual(data, {});
+        assert.deepEqual(data, { screens: [], user: {} });
+        readFileSyncStub.restore();
+        existsSyncStub.restore();
+    });
+
+    it('should be able to read existing job data and matched user', () => {
+        let readFileSyncStub = sinon.stub(fs, 'readFileSync').returns('{ "author": "autokin", "screens":[ { "acted": null }, { "acted": { "by": "autokin" } }, { "acted": { "by": "no-autokin" } } ] }');
+        let existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
+
+        let pid = 'test-project';
+        let fid = 'test-feature';
+        let jid = '88dd6d34';
+        let session = {
+            users: {
+                'autokin': {
+                    'username': 'autokin',
+                    'displayName': 'Autokin JS',
+                    'avatarUrl': 'http://www.autokinjs.com/users/1/avatar.png',
+                    'email': 'dev@autokinjs.com'
+                }
+            }
+        };
+        let data = job.get({ pid, fid, jid }, session);
+
+        assert(existsSyncStub.called);
+        assert(readFileSyncStub.called);
+        let updatedScreens = [{
+            acted: null
+        },{
+            acted: {
+                by: 'autokin',
+                user: session.users.autokin
+            }
+        }, {
+            acted: {
+                by: 'no-autokin',
+                user: {}
+            }
+        }];
+        assert.deepEqual(data, { author: 'autokin', screens: updatedScreens, user: session.users.autokin });
         readFileSyncStub.restore();
         existsSyncStub.restore();
     });
@@ -82,8 +126,9 @@ describe('Autokin Spectacles: Library -> Job', () => {
         let existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
 
         let pid = 'test-project';
+        let fid = 'test-feature';
         let jid = '88dd6d34';
-        let data = job.get({ pid, jid });
+        let data = job.get({ pid, fid, jid });
 
         assert(existsSyncStub.called);
         assert.deepEqual(data, null);
@@ -91,29 +136,75 @@ describe('Autokin Spectacles: Library -> Job', () => {
     });
 
     describe('promoteNewBase()', () => {
-        it('should be able to copy new base image and unlink old base', () => {
-            let unlinkSyncStub = sinon.stub(fs, 'unlinkSync');
+        it('should be able to copy new base image and rename old base', () => {
+            let existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
+            let renameSyncStub = sinon.stub(fs, 'renameSync');
             let copyFileSyncStub = sinon.stub(fs, 'copyFileSync');
+            let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
+            let readFileSyncStub = sinon.stub(fs, 'readFileSync').returns('{}');
 
-            job.promoteNewBase('p', 'j', 's.png');
+            job.promoteNewBase('p', 'f', 'j', 's.png', 'autokin');
 
-            assert(unlinkSyncStub.called);
+            assert(renameSyncStub.called);
             assert(copyFileSyncStub.called);
-            copyFileSyncStub.restore();
-            unlinkSyncStub.restore();
+            assert(writeFileSyncStub.called);
+            assert(readFileSyncStub.called);
+            assert(existsSyncStub.called);
+
+            fs.copyFileSync.restore();
+            fs.renameSync.restore();
+            fs.writeFileSync.restore();
+            fs.readFileSync.restore();
+            fs.existsSync.restore();
         });
 
-        it('should be able to copy new base image and not unlink old base', () => {
-            let unlinkSyncStub = sinon.stub(fs, 'unlinkSync');
+        it('should be able to copy new base image and new environment', () => {
+            let existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
+            let mkdirSyncStub = sinon.stub(fs, 'mkdirSync');
+            let renameSyncStub = sinon.stub(fs, 'renameSync');
             let copyFileSyncStub = sinon.stub(fs, 'copyFileSync');
+            let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
+            let readFileSyncStub = sinon.stub(fs, 'readFileSync').returns('{}');
 
-            job.promoteNewBase('p', 'j', 's.png', false);
+            job.promoteNewBase('p', 'f', 'j', 's.png', 'autokin', false);
 
-            assert(unlinkSyncStub.notCalled);
+            assert(!renameSyncStub.called);
             assert(copyFileSyncStub.called);
-            copyFileSyncStub.restore();
-            unlinkSyncStub.restore();
+            assert(writeFileSyncStub.called);
+            assert(!readFileSyncStub.called);
+            assert(existsSyncStub.called);
+            assert(mkdirSyncStub.called);
+
+            fs.copyFileSync.restore();
+            fs.renameSync.restore();
+            fs.writeFileSync.restore();
+            fs.readFileSync.restore();
+            fs.existsSync.restore();
+            fs.mkdirSync.restore();
         });
+
+        it('should be able to copy new base image without existing base', () => {
+            let existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
+            let renameSyncStub = sinon.stub(fs, 'renameSync');
+            let copyFileSyncStub = sinon.stub(fs, 'copyFileSync');
+            let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
+            let readFileSyncStub = sinon.stub(fs, 'readFileSync').returns('{"s.png":{"history":{}}}');
+
+            job.promoteNewBase('p', 'f', 'j', 's.png', 'autokin', false);
+
+            assert(!renameSyncStub.called);
+            assert(copyFileSyncStub.called);
+            assert(writeFileSyncStub.called);
+            assert(readFileSyncStub.called);
+            assert(existsSyncStub.called);
+
+            fs.copyFileSync.restore();
+            fs.renameSync.restore();
+            fs.writeFileSync.restore();
+            fs.readFileSync.restore();
+            fs.existsSync.restore();
+        });
+
     });
 
     describe('compare()', () => {
@@ -261,6 +352,68 @@ describe('Autokin Spectacles: Library -> Job', () => {
             readFileSyncStub.restore();
         });
 
+        it('should be able to detect images with different sizes', () => {
+            const buildImageData = (data, r, g, b) => {
+                let i = 0;
+                while (i < data.length) {
+                    data[i++] = r;
+                    data[i++] = g;
+                    data[i++] = b;
+                    data[i++] = 0xFF;
+                }
+
+                return data;
+            };
+
+            const pid = 'test-project';
+            const jid = '88dd6d34';
+            const width = 100, height = 100;
+
+            let imageRed = new PNG({
+                width,
+                height,
+                colorType: 2,
+                bgColor: {
+                    red: 0,
+                    green: 255,
+                    blue: 0
+                }
+            });
+            imageRed.data = buildImageData(imageRed.data, 255, 0, 0);
+
+            let imageGreen = new PNG({
+                width: width + 100,
+                height: height + 100,
+                colorType: 2,
+                bgColor: {
+                    red: 0,
+                    green: 255,
+                    blue: 0
+                }
+            });
+            imageGreen.data = buildImageData(imageGreen.data, 0, 255, 0);
+
+
+            let pngSyncReadStub = sinon.stub(PNG.sync, 'read')
+                .onFirstCall().returns(imageRed)
+                .onSecondCall().returns(imageGreen);
+            let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
+            let readFileSyncStub = sinon.stub(fs, 'readFileSync');
+            let result = job.__get__('compareImage')(pid, jid, 'source', 'base');
+
+            assert.deepEqual(result, {
+                size: true,
+                width,
+                height,
+                diff: width * height,
+                percentage: 1.0
+            });
+
+            pngSyncReadStub.restore();
+            writeFileSyncStub.restore();
+            readFileSyncStub.restore();
+        });
+
         it('should be able to compare snapshots', () => {
             let readdirSyncStub = sinon.stub(fs, 'readdirSync').returns(['file1.json', 'file2.json', 'file3.json']);
             let existsSyncStub = sinon.stub(fs, 'existsSync')
@@ -270,14 +423,14 @@ describe('Autokin Spectacles: Library -> Job', () => {
 
             let compareImageOrig = job.__get__('compareImage');
             let compareImageStub = sinon.stub()
-                .onFirstCall().returns({diff: 100})   // simulate image with difference
+                .onFirstCall().returns({ diff: 100 })   // simulate image with difference
                 .onSecondCall().returns({ diff: 0 }); // simulate identical image
             job.__set__('compareImage', compareImageStub);
 
             let promoteNewBaseOrig = job.__get__('promoteNewBase');
             let promoteNewBaseStub = sinon.stub();
             job.__set__('promoteNewBase', promoteNewBaseStub);
-            
+
             let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
             let readFileSyncStub = sinon.stub(fs, 'readFileSync').returns(JSON.stringify({
                 jobs: {

@@ -1,8 +1,8 @@
 import { fetchJobSuccess }  from '../actions/jobs-actions';
 
-export const fetchJob = (pid, jid) => {
+export const fetchJob = (pid, fid, jid) => {
     return dispatch => {
-        fetch(`/api/${pid}/jobs/${jid}`)
+        fetch(`/api/${pid}/${fid}/jobs/${jid}`)
             .then(res => res.json())
             .then(res => {
                 if (res.error) {
@@ -18,9 +18,9 @@ export const fetchJob = (pid, jid) => {
     }
 }
 
-export const updateJob = ({pid, jid, source, who, action}) => {
+export const updateJob = ({pid, fid, jid, source, who, action}) => {
     return dispatch => {
-        fetch(`/api/${pid}/jobs/${jid}`, { 
+        fetch(`/api/${pid}/${fid}/jobs/${jid}`, { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

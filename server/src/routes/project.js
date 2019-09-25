@@ -6,9 +6,9 @@ const express = require('express');
 const project = require('../lib/project');
 
 const router = express.Router();
-const handle = () => {
+const handle = (opt) => {
     router.get('/projects', (req, res) => {
-        const projects = project.getAll();
+        const projects = project.getAll(opt.session);
         res.status(200).send(projects);
     });
 

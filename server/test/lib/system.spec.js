@@ -22,7 +22,7 @@ describe('Autokin Spectacles: Library -> System', () => {
         syst.buildEnvironment();
 
         assert(existsSyncStub.called);
-        assert.strictEqual(mkdirSyncStub.callCount, 4);
+        assert.strictEqual(mkdirSyncStub.callCount, 5);
         existsSyncStub.restore();
         mkdirSyncStub.restore();
     });

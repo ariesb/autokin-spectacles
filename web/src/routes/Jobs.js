@@ -7,13 +7,26 @@ import { Snapshots } from '../components/Snapshots';
 
 import { fetchJob, updateJob } from '../services/jobs-service';
 import { getJob } from '../reducers/jobs-reducer';
+import { showModal, hideModal } from '../actions/modal-actions';
+
+const Modal = ({ handleClose, show, children }) => {
+    const showHideClassName = show ? 'modal display-block' : 'modal display-none';
+    return (
+        <div className={showHideClassName}>
+            <section className='modal-main'>
+                {children}
+                <div className="close" onClick={handleClose}></div>
+            </section>
+        </div>
+    );
+};
 
 class Jobs extends Component {
 
     componentWillMount() {
         const { fetchJob } = this.props;
-        let { pid, jid } = this.props.match.params;
-        fetchJob(pid, jid);
+        let { pid, fid, jid } = this.props.match.params;
+        fetchJob(pid, fid, jid);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -25,42 +38,45 @@ class Jobs extends Component {
     }
 
     render() {
-        let { pid, jid } = this.props.match.params;
-        let { result, pending } = this.props.job;
+        let { pid, fid, jid } = this.props.match.params;
+        let { data, pending } = this.props.job;
 
         if (pending) return (<div>Loading</div>);
-        if(result.ecode) return (<div>No job.</div>);
+        if (data.ecode) return (<div>No job.</div>);
 
         const updateJobAction = ({ source, action }) => {
             const { updateJob } = this.props;
             updateJob({
                 pid,
+                fid,
                 jid,
                 source,
                 action,
                 who: this.props.session.data.username
             });
-        }
+        };
 
-        let host = `/images/${pid}/jobs/${jid}`;
-        let base = `/images/${pid}/base`;
+        let host = `/images/${pid}/${fid}/jobs/${jid}`;
+        let base = `/images/${pid}/${fid}/base`;
+        let status = data.result.failed > 0 ? 'failed' : (data.result.pending > 0 ? 'pending' : 'passed');
 
         return (
             <div className="job-content">
+                <Modal show={this.props.modal.show} handleClose={this.props.hideModal} >
+                </Modal>
                 <div className="project-id">{pid}</div>
-                <div className="job-info"><span>{jid}</span>|<span><a href={result.ref} target="_new">Build Link</a></span>|<span>
-                    {new Intl.DateTimeFormat('en-GB', {
-                        dateStyle: 'long',
-                        timeStyle: 'medium'
-                    }).format(new Date(result.when))}</span></div>
-                <Snapshots screens={result.screens} base={base} host={host} />
-                {result.screens
+                <div className="feature-id">{fid}<div className={`marker ${status}-block`}>{status}</div></div>
+                <div className="job-info"><a href={data.ref} target="_new">{jid}</a>
+                    <span>{data.result.new} new, {data.result.passed} passed, {data.result.failed} failed, and {data.result.pending} pending for action.</span></div>
+                <Snapshots screens={data.screens} base={base} host={host} />
+                {data.screens
                     .filter(screen => (
                        (screen.diff !== null) && (screen.diff.diff !== 0)))
-                    .sort((a, b) => a.acted ? 1 : -1)
                     .map(screen => {
                         return (
-                            <Job screen={screen} base={base} host={host} action={updateJobAction} key={screen.source}/>                            
+                            <Job screen={screen} base={base} host={host} 
+                                action={updateJobAction}
+                                key={screen.source} />
                         );
                     })}
             </div>
@@ -70,12 +86,15 @@ class Jobs extends Component {
 
 const mapStateToProps = state => ({
     job: getJob(state),
-    session: state.session
+    session: state.session,
+    modal: state.modal
 })
 
 const mapDispatchToProps = dispatch => bindActionCreators({
     fetchJob,
-    updateJob
+    updateJob,
+    showModal,
+    hideModal
 }, dispatch)
 
 export default connect(

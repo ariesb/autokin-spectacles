@@ -21,6 +21,7 @@ const create = ({passport, session}, config) => {
             failureRedirect: '/login'
         }),
         (req, res) => {
+            session.register(req.user);
             session[req.user.accessToken] = req.user;
             res.cookie('AutokinSession', req.user.accessToken, { path: '/', expire: new Date() + 1 });
             res.redirect(`/authorise/${req.user.accessToken}`);

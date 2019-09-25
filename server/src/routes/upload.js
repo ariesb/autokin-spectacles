@@ -5,6 +5,7 @@
  * CURL Upload Command
  * curl -X PUT --form "snapshots=@snapshots.zip" 
  *     -H "PROJECTID:mytestproject" 
+ *     -H "FEATUREID:mytestfeature"
  *     -H "JOBID:bz8dd6d34"
  *     -H "AUTHOR:ariesbe"
  *     -H "REF:http://autokinjs.com/builds/bz8dd6d34" 
@@ -21,15 +22,16 @@ const handle = () => {
             return res.status(400).send('No files were uploaded.');
         }
 
-        let { projectid: pid, jobid: jid, author, ref } = req.headers;
-        if (job.exists({ pid, jid })) {
+        let { projectid: pid, featureid: fid, jobid: jid, author, ref } = req.headers;
+        if (job.exists({ pid, fid, jid })) {
             return res.status(400).send('Job already exists.');
         }
 
-        project.makeIfNotExists(pid);
+        project.makeIfNotExists(pid, fid);
         let source = req.files.snapshots;
         job.compare({
             pid,
+            fid,
             jid,
             author,
             ref,

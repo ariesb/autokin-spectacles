@@ -7,10 +7,10 @@ const job = require('../lib/job');
 const project = require('../lib/project');
 
 const router = express.Router();
-const handle = () => {
-    router.get('/:pid/jobs/:jid', (req, res) => {
-        const { pid, jid } = req.params;
-        const jobInfo = job.get({ pid, jid });
+const handle = (opt) => {
+    router.get('/:pid/:fid/jobs/:jid', (req, res) => {
+        const { pid, fid, jid } = req.params;
+        const jobInfo = job.get({ pid, fid, jid }, opt.session);
         if (jobInfo == null) {
             res.status(404).send({
                 ecode: 'JOB_NOT_FOUND'
@@ -20,11 +20,11 @@ const handle = () => {
         }
     });
 
-    router.post('/:pid/jobs/:jid', (req, res) => {
-        const { pid, jid } = req.params;
+    router.post('/:pid/:fid/jobs/:jid', (req, res) => {
+        const { pid, fid, jid } = req.params;
         const { source, action, who } = req.body;
 
-        const jobInfo = job.get({ pid, jid });
+        const jobInfo = job.get({ pid, fid, jid }, opt.session);
         if (!jobInfo) {
             res.status(400).send({
                 ecode: 'INVALID_REQUEST'
@@ -40,24 +40,29 @@ const handle = () => {
             return;
         }
 
-        const proj = project.get(pid);
+        const feat = project.getFeature(fid);
         image.acted = {
             'by': who,
             'when': new Date().toISOString(),
             'as': action
         };
 
+        // mapped user
+        let user = opt.session.users[who];
+        image.acted.user = user ? user : {};
+
         if (action == 'new base') {
-            job.promoteNewBase(pid, jid, source);
-            proj.jobs[jid].result.new += 1;
+            job.promoteNewBase(pid, fid, jid, source, who);
+            feat.jobs[jid].result.new += 1;
         } else {
-            proj.jobs[jid].result.failed += 1;
+            feat.jobs[jid].result.failed += 1;
         }
-        proj.jobs[jid].result.pending -= 1;
-        project.save(pid, proj);
+        feat.jobs[jid].result.pending -= 1;
+        project.saveFeature(fid, feat);
 
         jobInfo.screens = jobInfo.screens.map(screen => (screen.source == source ? image : screen));
-        job.update({ pid, jid, data: jobInfo });
+        jobInfo.result = feat.jobs[jid].result;
+        job.update({ pid, fid, jid, data: jobInfo });
         res.status(200).send(jobInfo);
     });
 

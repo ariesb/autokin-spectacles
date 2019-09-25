@@ -10,6 +10,7 @@ const buildEnvironment = () => {
     if (!fs.existsSync(target)) {
         target = path.resolve(process.cwd(), './store');
         fs.mkdirSync(target.concat('/data/projects'), { recursive: true });
+        fs.mkdirSync(target.concat('/data/features'), { recursive: true });
         fs.mkdirSync(target.concat('/history'), { recursive: true });
         fs.mkdirSync(target.concat('/images'), { recursive: true });
         fs.mkdirSync(target.concat('/tmp'), { recursive: true });

@@ -17,7 +17,7 @@ const fs = require('fs');
 let authConfig = null;
 try {
     authConfig = JSON.parse(fs.readFileSync('./config/auth.config.json'));
-} catch(_error) {
+} catch (_error) {
     console.log('Autokin Spectacles requires atleast one supported authentication.');
     process.exit(1);
 }
@@ -35,11 +35,11 @@ app.use(cors({
 }));
 
 auth.init(app);
-app.get('/health', (req, res) => res.send({status: 'active'}));
+app.get('/health', (req, res) => res.send({ status: 'active' }));
 app.use('/auth', auth.support('gitlab', authConfig));
-app.use('/api', upload.handle({}));
-app.use('/api', job.handle({}));
-app.use('/api', project.handle({}));
+app.use('/api', upload.handle({ session: auth.session }));
+app.use('/api', job.handle({ session: auth.session }));
+app.use('/api', project.handle({ session: auth.session }));
 app.use('/images', express.static('store/images'));
 app.use(express.static(path.join(process.cwd(), '/docs')));
 app.get('*', (req, res) => {

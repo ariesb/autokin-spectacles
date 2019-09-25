@@ -68,3 +68,5 @@ store/
 tmp/
 build/
 web/build/
+server/config/
+server/docs/

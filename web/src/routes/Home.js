@@ -24,7 +24,7 @@ const Home = (props) => {
         <div className="home-content">
             {props.projects.map(project => {
                 return (
-                    <Project project={project} key={project.pid}/>
+                    <Project project={project} key={`${project.pid}-${project.fid}`} />
                 );
             })}
         </div>

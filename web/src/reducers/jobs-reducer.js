@@ -3,7 +3,7 @@ import {
 } from '../actions/jobs-actions';
 
 const initialState = {
-    result: {
+    data: {
         when: new Date().toUTCString(),
         screens: []
     },
@@ -16,7 +16,7 @@ export function jobsReducer(state = initialState, action) {
             return {
                 ...state,
                 pending: false,
-                result: action.payload
+                data: action.payload
             }
         default:
             return state;
