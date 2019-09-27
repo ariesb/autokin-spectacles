@@ -4,10 +4,12 @@ import {
     BrowserRouter as Router,
     Route
 } from 'react-router-dom';
+import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { connectedRouterRedirect } from 'redux-auth-wrapper/history4/redirect';
 import locationHelperBuilder from 'redux-auth-wrapper/history4/locationHelper';
+
 
 import Home from './Home';
 import Login from './Login';
@@ -38,8 +40,8 @@ const  AppWrapper = () => {
                 <section className="content">
                     <Route path="/" exact={true} component={userIsAuthenticated(Home)} />
                     <Route path="/:pid/:fid/jobs/:jid" component={userIsAuthenticated(Jobs)} />
-                    <Route path="/login" key="gitlab-login" component={userIsNotAuthenticated(Login)} />
-                    <Route path="/authorise/:token" component={userIsNotAuthenticated(Authorise)} />
+                    <Route path="/login" key="gitlab-login" component={withRouter(userIsNotAuthenticated(Login))} />
+                    <Route path="/authorise/:token" component={withRouter(userIsNotAuthenticated(Authorise))} />
                 </section>
                 <Footer />
             </div>

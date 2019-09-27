@@ -8,6 +8,7 @@ const PNG = require('pngjs').PNG;
 const pixelmatch = require('pixelmatch');
 const extract = require('extract-zip');
 const project = require('./project');
+const { slack } = require('../integrations/slack');
 
 const expandSnapshots = ({ pid, fid, jid, files }, cb) => {
     const target = path.resolve(process.cwd(), `./store/images/${pid}/${fid}/jobs/${jid}`);
@@ -119,11 +120,14 @@ const promoteNewBase = (pid, fid, jid, source, author, withbase = true) => {
     fs.writeFileSync(baseMeta, JSON.stringify(data, null, 4));
 };
 
-const compareSnapshots = ({ pid, fid, jid, author, ref }) => {
+const compareSnapshots = ({ pid, fid, jid, author, ref }, session) => {
     const source = path.resolve(process.cwd(), `./store/images/${pid}/${fid}/jobs/${jid}`);
     let files = fs.readdirSync(source);
     let jobResult = newResult({ author, ref });
     let comparisons = { pid, fid, jid, author, ref, when: jobResult.when, screens: [] };
+    
+    let user = session.users[author];
+    comparisons.user = jobResult.user = user ? user : {};
 
     files.forEach(file => {
         let result = {
@@ -157,14 +161,17 @@ const compareSnapshots = ({ pid, fid, jid, author, ref }) => {
     let feature = project.getFeature(fid);
     feature.jobs[jid] = jobResult;
     project.saveFeature(fid, feature);
+
+    return comparisons;
 };
 
-const compare = ({ pid, fid, jid, author, ref, source }) => {
+const compare = ({ pid, fid, jid, author, ref, source }, session) => {
     let files = path.resolve(process.cwd(), `./store/tmp/${source.name}`);
     source.mv(files, (err) => {
         if (!err) {
             expandSnapshots({ pid, fid, jid, files }, () => {
-                compareSnapshots({ pid, fid, jid, author, ref });
+                let result = compareSnapshots({ pid, fid, jid, author, ref }, session);
+                slack({ pid, fid, jid, job: result });
             });
         }
     });

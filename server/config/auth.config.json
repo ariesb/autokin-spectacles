@@ -1,6 +1,0 @@
-{
-    "clientID": "b881229106bf7139740b77e576ce95711b787aa163ea15e0ed403cab9c01919c",
-    "clientSecret": "128e697a04e563c1c1b9376156ddfd3f1851b5ebcd42aeb2307f67037ed83a5d",
-    "callbackURL": "http://localhost:3000/auth/gitlab/callback",
-    "baseURL": "https://git.habbitzz.com/"
-}

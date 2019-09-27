@@ -4,6 +4,7 @@
  */
 const express = require('express');
 const router = express.Router();
+const request = require('request');
 
 const GitLabStrategy = require('passport-gitlab2');
 
@@ -48,5 +49,35 @@ const create = ({passport, session}, config) => {
     return router;
 };
 
+const syncUsers = (session, config) => {
+    request({
+        method: 'GET',
+        uri: `${config.baseURL}/api/v4/users?active=true`,
+        headers: {
+            'PRIVATE-TOKEN': config.privateToken
+        }
+    }, (error, response) => {
+            let users = JSON.parse(response.body);
+            if(response.statusCode == 200) {
+                console.log(`Sync local copy of unknown users.`);
+                users
+                    .filter(user => user.state === 'active')
+                    .map(user => {
+                        let isActiveUser = session.users[user.username];
+                        if(!isActiveUser) {
+                            session.register({
+                                username: user.username,
+                                displayName: user.name,
+                                avatarUrl: user.avatar_url,
+                                emails: [{
+                                    value: user.email
+                                }]                
+                            });
+                        }
+                    });
+            }
+    });
+};
 
 module.exports.create = create;
+module.exports.syncUsers = syncUsers;

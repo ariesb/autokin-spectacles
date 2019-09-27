@@ -16,7 +16,7 @@ const job = require('../lib/job');
 const project = require('../lib/project');
 
 const router = express.Router();
-const handle = () => {
+const handle = (opt) => {
     router.put('/upload', (req, res) => {
         if (!req.files) {
             return res.status(400).send('No files were uploaded.');
@@ -36,7 +36,7 @@ const handle = () => {
             author,
             ref,
             source
-        });
+        }, opt.session);
         res.send('File uploaded!');
     });
 

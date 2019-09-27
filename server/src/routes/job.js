@@ -5,6 +5,7 @@
 const express = require('express');
 const job = require('../lib/job');
 const project = require('../lib/project');
+const { slack } = require('../integrations/slack');
 
 const router = express.Router();
 const handle = (opt) => {
@@ -64,6 +65,11 @@ const handle = (opt) => {
         jobInfo.result = feat.jobs[jid].result;
         job.update({ pid, fid, jid, data: jobInfo });
         res.status(200).send(jobInfo);
+
+        // notifications
+        if (jobInfo.result.pending === 0) {
+            slack({ pid, fid, jid, job: jobInfo, acted: true });
+        }
     });
 
     return router;

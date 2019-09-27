@@ -5,6 +5,7 @@
 const passport = require('passport');
 const fs = require('fs');
 const path = require('path');
+const request = require('request');
 
 const session = {
     sessions: {},
@@ -41,6 +42,8 @@ const init = (app) => {
 
 const support = (mode, config) => {
     const strategy = require(`./${mode}`);
+    // sync users local copy
+    strategy.syncUsers(session, config);
     return strategy.create({passport, session}, config);
 };
 

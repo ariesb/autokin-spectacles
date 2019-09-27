@@ -415,6 +415,17 @@ describe('Autokin Spectacles: Library -> Job', () => {
         });
 
         it('should be able to compare snapshots', () => {
+            let session = {
+                users: {
+                    'autokin': {
+                        'username': 'autokin',
+                        'displayName': 'Autokin JS',
+                        'avatarUrl': 'http://www.autokinjs.com/users/1/avatar.png',
+                        'email': 'dev@autokinjs.com'
+                    }
+                }
+            };
+
             let readdirSyncStub = sinon.stub(fs, 'readdirSync').returns(['file1.json', 'file2.json', 'file3.json']);
             let existsSyncStub = sinon.stub(fs, 'existsSync')
                 .onFirstCall().returns(true)      // simulate existing base image
@@ -445,7 +456,7 @@ describe('Autokin Spectacles: Library -> Job', () => {
                 jid: '88dd6d34',
                 author: 'autokin',
                 ref: 'http://autokin'
-            });
+            }, session);
 
             assert(readdirSyncStub.called);
             assert.strictEqual(promoteNewBaseStub.callCount, 1);

@@ -15,6 +15,7 @@
   "author": "Aries Beltran <me@ariesb.com>",
   "license": "MIT",
   "dependencies": {
+    "@slack/web-api": "^5.2.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-fileupload": "^1.1.5",
@@ -23,6 +24,7 @@
     "passport-gitlab2": "^5.0.0",
     "pixelmatch": "^5.0.2",
     "pngjs": "^3.4.0",
+    "request": "^2.88.0",
     "winston": "^3.2.1"
   }
 }
