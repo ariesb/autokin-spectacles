@@ -6,6 +6,7 @@ const express = require('express');
 const job = require('../lib/job');
 const project = require('../lib/project');
 const { slack } = require('../integrations/slack');
+const triggers = require('../integrations/triggers');
 
 const router = express.Router();
 const handle = (opt) => {
@@ -69,6 +70,12 @@ const handle = (opt) => {
         // notifications
         if (jobInfo.result.pending === 0) {
             slack({ pid, fid, jid, job: jobInfo, acted: true });
+
+            // try to do triggers
+            if (jobInfo.pipeline) {
+                let status = jobInfo.result.failed > 0 ? 'failed' : 'passed';
+                triggers.run(jobInfo.pipeline, status);
+            }
         }
     });
 

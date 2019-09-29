@@ -120,11 +120,11 @@ const promoteNewBase = (pid, fid, jid, source, author, withbase = true) => {
     fs.writeFileSync(baseMeta, JSON.stringify(data, null, 4));
 };
 
-const compareSnapshots = ({ pid, fid, jid, author, ref }, session) => {
+const compareSnapshots = ({ pid, fid, jid, author, ref, pipeline }, session) => {
     const source = path.resolve(process.cwd(), `./store/images/${pid}/${fid}/jobs/${jid}`);
     let files = fs.readdirSync(source);
     let jobResult = newResult({ author, ref });
-    let comparisons = { pid, fid, jid, author, ref, when: jobResult.when, screens: [] };
+    let comparisons = { pid, fid, jid, author, ref, pipeline, when: jobResult.when, screens: [] };
     
     let user = session.users[author];
     comparisons.user = jobResult.user = user ? user : {};
@@ -165,12 +165,12 @@ const compareSnapshots = ({ pid, fid, jid, author, ref }, session) => {
     return comparisons;
 };
 
-const compare = ({ pid, fid, jid, author, ref, source }, session) => {
+const compare = ({ pid, fid, jid, author, ref, source, pipeline }, session) => {
     let files = path.resolve(process.cwd(), `./store/tmp/${source.name}`);
     source.mv(files, (err) => {
         if (!err) {
             expandSnapshots({ pid, fid, jid, files }, () => {
-                let result = compareSnapshots({ pid, fid, jid, author, ref }, session);
+                let result = compareSnapshots({ pid, fid, jid, author, ref, pipeline }, session);
                 slack({ pid, fid, jid, job: result });
             });
         }

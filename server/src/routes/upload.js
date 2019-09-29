@@ -22,7 +22,13 @@ const handle = (opt) => {
             return res.status(400).send('No files were uploaded.');
         }
 
-        let { projectid: pid, featureid: fid, jobid: jid, author, ref } = req.headers;
+        let { 
+            projectid: pid, featureid: fid, 
+            jobid: jid, author, ref, 
+            pipeline_project: pipelineProject,  
+            pipelineid: pipelineId
+        } = req.headers;
+        console.log(req.headers);
         if (job.exists({ pid, fid, jid })) {
             return res.status(400).send('Job already exists.');
         }
@@ -35,7 +41,11 @@ const handle = (opt) => {
             jid,
             author,
             ref,
-            source
+            source,
+            pipeline: {
+                pipelineProject,
+                pipelineId
+            }
         }, opt.session);
         res.send('File uploaded!');
     });
