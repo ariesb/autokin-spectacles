@@ -16,7 +16,8 @@ export const Snapshots = ({screens, host}) => {
                 
                 return (
                     <div className="snap-card">
-                        <div className="image" style={{backgroundImage: bgImage }}>
+                        <div className="loader" style={{ zIndex: 0, top: '35%' }} />    
+                        <div className="image" style={{backgroundImage: bgImage }}>                           
                         </div>
                         <div className="content">
                             <div>{imageName}</div>

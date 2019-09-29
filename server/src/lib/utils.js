@@ -12,7 +12,7 @@ const replace = (source, lookup) => {
 };
 
 const json = (template, lookup) => {
-    let obj = Object.assign({}, template);
+    let obj = JSON.parse(JSON.stringify(template));
     for (var p in obj) {
         if (typeof (obj[p]) == 'object') {
             obj[p] = json(obj[p], lookup);

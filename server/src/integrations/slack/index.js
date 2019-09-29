@@ -118,14 +118,14 @@ const slack = ({ pid: projectid, fid: featureid, jid: jobid, job, acted }) => {
     
     lookup.status_message = status_message;
     let blocks = json(template, lookup);
-    
     const web = new WebClient(configuration.token);
-    web.chat.postMessage({
-        text: 'Autokin Spectacles Visual Test Result',
-        blocks,
-        channel: configuration.channel,
-        link_names: true
-    });
+    const slackMessage = {
+        'text': 'Autokin Spectacles Visual Test Result',
+        'blocks': blocks,
+        'channel': configuration.channel,
+        'link_names': true
+    };
+    web.chat.postMessage(slackMessage);
 
     return blocks;
 };

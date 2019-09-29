@@ -60,7 +60,6 @@ code {
   top: 0px;
   right: 25px;
   height: 60px;
-  width: 250px;
   vertical-align: middle;
   text-align: right;
   margin: 25px 15px 0px 0px;
@@ -251,7 +250,7 @@ code {
   -ms-flex: 0 0 auto;
   flex: 0 0 auto;
   padding: 0;
-  background: rgba(0, 0, 0, .05);
+  background: rgba(0, 0, 0, 0.05);
   background-size: cover;
   cursor: pointer;
 }
@@ -260,11 +259,13 @@ code {
   background-size: contain;
   background-repeat: no-repeat;
   background-position-x: 50%;
+  background-color: #767676;
 }
 
 .screen-card .image {
   width: auto;
   height: 100%;
+  z-index: 2;
 }
 
 .screen-card .image .emptyImage {
@@ -705,6 +706,7 @@ code {
 .head-menu {
   display: inline-block;
   float: left;
+  padding-right: 36px;
 }
 
 .icon-dashboard {
@@ -977,4 +979,14 @@ code {
   100% {
     box-shadow: 0 0 0 5px rgba(34, 34, 34, 0.3), 0 0 0 8px rgba(34, 34, 34, 0.3), 0 0 0 12px rgba(34, 34, 34, 0.3), 0 0 0 28px rgba(34, 34, 34, 0);
   }
+}
+
+.message-head {
+  font-weight: bold;
+  font-size: 36px;
+  margin-top: 50px;
+  color: rgb(36, 42, 48);
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import Screenshot from '../components/Screenshot';
 import Moment from 'react-moment';
 import ScreenSplitter from '../components/ScreenSplitter';

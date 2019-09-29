@@ -41,8 +41,8 @@ class Jobs extends Component {
         let { pid, fid, jid } = this.props.match.params;
         let { data, pending } = this.props.job;
 
-        if (pending) return (<div>Loading</div>);
-        if (data.ecode) return (<div>No job.</div>);
+        if (pending) return (<div className="loader"></div>);
+        if (data.ecode) return (<div><div className="message-head">Ooops! Looks like you got lost...</div><div>The visual test that you are looking for doesn't exists.</div></div>);
 
         const updateJobAction = ({ source, action }) => {
             const { updateJob } = this.props;
