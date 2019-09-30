@@ -60,7 +60,7 @@ const handle = (opt) => {
             feat.jobs[jid].result.failed += 1;
         }
         feat.jobs[jid].result.pending -= 1;
-        project.saveFeature(fid, feat);
+        project.saveFeature(feat);
 
         jobInfo.screens = jobInfo.screens.map(screen => (screen.source == source ? image : screen));
         jobInfo.result = feat.jobs[jid].result;
@@ -70,16 +70,18 @@ const handle = (opt) => {
         // notifications
         if (jobInfo.result.pending === 0) {
             slack({ pid, fid, jid, job: jobInfo, acted: true });
-
-            // try to do triggers
-            if (jobInfo.pipeline) {
-                let status = jobInfo.result.failed > 0 ? 'failed' : 'passed';
-                triggers.run(jobInfo.pipeline, status);
-            }
+            runTriggers(jobInfo);
         }
     });
 
     return router;
+};
+
+const runTriggers = (job) => {
+    if (job.pipeline && !project.hasPendingAcrossFeatures(job)) {
+        let status = job.result.failed > 0 ? 'failed' : 'passed';
+        triggers.run(job.pipeline, status);
+    }
 };
 
 module.exports.handle = handle;

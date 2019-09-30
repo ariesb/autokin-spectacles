@@ -33,8 +33,8 @@ const get = (pid) => {
     return data;
 };
 
-const save = (pid, data) => {
-    const projectTarget = path.resolve(process.cwd(), `./store/data/projects/${pid}.json`);
+const save = (data) => {
+    const projectTarget = path.resolve(process.cwd(), `./store/data/projects/${data.pid}.json`);
     fs.writeFileSync(projectTarget, JSON.stringify(data, null, 4));
 };
 
@@ -44,20 +44,34 @@ const getFeature = (fid) => {
     return data;
 };
 
-const saveFeature = (fid, data) => {
-    const featureTarget = path.resolve(process.cwd(), `./store/data/features/${fid}.json`);
+const saveFeature = (data) => {
+    const featureTarget = path.resolve(process.cwd(), `./store/data/features/${data.fid}.json`);
     fs.writeFileSync(featureTarget, JSON.stringify(data, null, 4));
 };
 
 const makeIfNotExists = (pid, fid) => {
     const projectPath = path.resolve(process.cwd(), `./store/data/projects/${pid}.json`);
+    if (!fs.existsSync(projectPath)) {
+        this.save({
+            pid,
+            features: [
+                fid
+            ]
+        });
+    }
+
     const featurePath = path.resolve(process.cwd(), `./store/data/features/${fid}.json`);
     if (!fs.existsSync(featurePath)) {
-        fs.writeFileSync(featurePath, JSON.stringify({
+        this.saveFeature({
             pid,
             fid,
             jobs: {}
-        }, null, 4));
+        });
+
+        let project = this.get(pid);
+        console.log(project.features);
+        project.features.push(fid);
+        this.save(project);
 
         // create folder structure for images
         const imagesBasePath = path.resolve(process.cwd(), `./store/images/${pid}/${fid}`);
@@ -65,10 +79,20 @@ const makeIfNotExists = (pid, fid) => {
         fs.mkdirSync(imagesBasePath.concat('/history'), { recursive: true });
         fs.mkdirSync(imagesBasePath.concat('/jobs'), { recursive: true });
     }
+};
 
-    let project = !fs.existsSync(projectPath) ? { pid, features: [] } : get(pid);
-    project.features.push(fid);
-    save(pid, project);
+const hasPendingAcrossFeatures = ({ pid, jid }) => {
+    let project = this.get(pid);
+    let features = [];
+    if (project) {
+        features = project.features.filter(fid => {
+            let feature = this.getFeature(fid);
+            let job = feature.jobs[jid];
+            return job && job.result.pending > 0;
+        }, this);
+    }
+
+    return features.length > 0;
 };
 
 module.exports.makeIfNotExists = makeIfNotExists;
@@ -77,3 +101,4 @@ module.exports.get = get;
 module.exports.save = save;
 module.exports.getFeature = getFeature;
 module.exports.saveFeature = saveFeature;
+module.exports.hasPendingAcrossFeatures = hasPendingAcrossFeatures;

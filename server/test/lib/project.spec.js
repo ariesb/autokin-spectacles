@@ -7,36 +7,58 @@ describe('Autokin Spectacles: Library -> Project', () => {
 
     it('should not try to create project artifacts if exists', () => {
         let existsSyncStub = sinon.stub(fs, 'existsSync').returns(true);
+        let projectSaveStub = sinon.stub(project, 'save');
+        let projectSaveFeatureStub = sinon.stub(project, 'saveFeature');
         let mkdirSyncStub = sinon.stub(fs, 'mkdirSync');
-        let readFileSyncStub = sinon.stub(fs, 'readFileSync').returns('{"features":[]}');
-        let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
 
         project.makeIfNotExists('test-project', 'feature-id');
 
         assert(existsSyncStub.called);
-        assert(readFileSyncStub.called);
-        assert(writeFileSyncStub.called);
-        assert(!mkdirSyncStub.called);
+        assert.strictEqual(existsSyncStub.callCount, 2);
+
+        assert(projectSaveStub.notCalled);
+        assert(projectSaveFeatureStub.notCalled);
+        assert(mkdirSyncStub.notCalled);
+        
         fs.existsSync.restore();
+        project.save.restore();
+        project.saveFeature.restore();
         fs.mkdirSync.restore();
-        fs.readFileSync.restore();
-        fs.writeFileSync.restore();
     });
 
     it('should be able to create project artifacts if new', () => {
+        let pid = 'test-project';
+        let projectSaveStub = sinon.stub(project, 'save');
+        let projectSaveFeatureStub = sinon.stub(project, 'saveFeature');
+        let projectGetStub = sinon.stub(project, 'get')
+            .returns({
+                pid,
+                features: [                    
+                ]
+            });
+
         let existsSyncStub = sinon.stub(fs, 'existsSync').returns(false);
         let mkdirSyncStub = sinon.stub(fs, 'mkdirSync');
-        let writeFileSyncStub = sinon.stub(fs, 'writeFileSync');
 
-        let pid = 'test-project';
         project.makeIfNotExists(pid);
 
         assert(existsSyncStub.called);
+        assert.strictEqual(existsSyncStub.callCount, 2);
+
+        assert(projectSaveStub.called);
+        assert.strictEqual(projectSaveStub.callCount, 2);
+
+        assert(projectSaveFeatureStub.called);
+        assert(projectGetStub.called);
+
         assert.strictEqual(mkdirSyncStub.callCount, 3);
-        assert(writeFileSyncStub.called);
+
         fs.existsSync.restore();
         fs.mkdirSync.restore();
-        fs.writeFileSync.restore();
+
+        project.save.restore();
+        project.saveFeature.restore();
+        project.get.restore();
     });
 
     it('should be able to write project data', () => {
@@ -57,7 +79,7 @@ describe('Autokin Spectacles: Library -> Project', () => {
 
         assert(readFileSyncStub.called);
         assert.deepEqual(data, {});
-        readFileSyncStub.restore();
+        fs.readFileSync.restore();
     });
 
     it('should be able to read all projects data', () => {
@@ -163,5 +185,88 @@ describe('Autokin Spectacles: Library -> Project', () => {
             assert.deepEqual(data, {});
             readFileSyncStub.restore();
         });
+    });
+
+    describe('hasPendingAcrossFeatures', () => {
+        it('should be able to identify that has pending action across features', () => {
+            let projectGetStub = sinon.stub(project, 'get')
+                .returns({
+                    pid: 'pid',
+                    features: [
+                        'feat1',
+                        'feat2'
+                    ]
+                });
+            let projectGetFeatureStub = sinon.stub(project, 'getFeature')
+                .onFirstCall().returns({
+                    jobs: {
+                        'jid': {
+                            result: {
+                                pending: 0
+                            }
+                        }
+                    }
+                })
+                .onSecondCall().returns({
+                    jobs: {
+                        'jid': {
+                            result: {
+                                pending: 1
+                            }
+                        }
+                    }
+                });
+
+
+            let hasPending = project.hasPendingAcrossFeatures({ pid: 'pid', jid: 'jid' });
+
+            assert(projectGetStub.called);
+            assert(projectGetFeatureStub.called);
+            assert(hasPending);
+
+            project.get.restore();
+            project.getFeature.restore();
+        });
+
+        it('should be able to identify that has no pending action across features', () => {
+            let projectGetStub = sinon.stub(project, 'get')
+                .returns({
+                    pid: 'pid',
+                    features: [
+                        'feat1',
+                        'feat2'
+                    ]
+                });
+            let projectGetFeatureStub = sinon.stub(project, 'getFeature')
+                .onFirstCall().returns({
+                    jobs: {
+                        'jid': {
+                            result: {
+                                pending: 0
+                            }
+                        }
+                    }
+                })
+                .onSecondCall().returns({
+                    jobs: {
+                        'jid': {
+                            result: {
+                                pending: 0
+                            }
+                        }
+                    }
+                });
+
+
+            let hasPending = project.hasPendingAcrossFeatures({ pid: 'pid', jid: 'jid' });
+
+            assert(projectGetStub.called);
+            assert(projectGetFeatureStub.called);
+            assert(!hasPending);
+
+            project.get.restore();
+            project.getFeature.restore();
+        });
+
     });
 });

@@ -160,7 +160,7 @@ const compareSnapshots = ({ pid, fid, jid, author, ref, pipeline }, session) => 
     // update features results
     let feature = project.getFeature(fid);
     feature.jobs[jid] = jobResult;
-    project.saveFeature(fid, feature);
+    project.saveFeature(feature);
 
     return comparisons;
 };
