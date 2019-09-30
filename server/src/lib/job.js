@@ -158,7 +158,7 @@ const compareSnapshots = ({ pid, fid, jid, author, ref, pipeline }, session) => 
     fs.writeFileSync(`${source}/results.json`, JSON.stringify(comparisons, null, 4));
 
     // update features results
-    let feature = project.getFeature(fid);
+    let feature = project.getFeature(pid, fid);
     feature.jobs[jid] = jobResult;
     project.saveFeature(feature);
 
@@ -170,8 +170,13 @@ const compare = ({ pid, fid, jid, author, ref, source, pipeline }, session) => {
     source.mv(files, (err) => {
         if (!err) {
             expandSnapshots({ pid, fid, jid, files }, () => {
-                let result = compareSnapshots({ pid, fid, jid, author, ref, pipeline }, session);
-                slack({ pid, fid, jid, job: result });
+                let jobInfo = compareSnapshots({ pid, fid, jid, author, ref, pipeline }, session);
+                slack({ pid, fid, jid, job: jobInfo });
+                
+                console.log(`${new Date().toISOString()} > Visual test ${pid} ${fid} ${jid} completed.`);
+                if (jobInfo.result.pending === 0) {
+                    project.runTriggers(jobInfo);
+                }
             });
         }
     });

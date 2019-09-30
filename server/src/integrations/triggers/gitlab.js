@@ -36,9 +36,11 @@ const getManualJobId = (opt, action, { pipelineProject, pipelineId }, callback) 
         let jobs = JSON.parse(response.body);
         if (response.statusCode == 200) {
             let targetJob = jobs.find(job => job.name == action.jobName);
-            callback({
-                gitlabJobId: targetJob.id
-            });
+            if(targetJob) {
+                callback({
+                    gitlabJobId: targetJob.id
+                });
+            }
         }
     });
 };
@@ -52,7 +54,7 @@ const playJob = (opt, { pipelineProject }, gitlabJobId) => {
         }
     }, (error, response) => {
         if (response.statusCode == 200) {
-            console.log('Successfully trigger to execute pipeline job.');
+            console.log(`${new Date().toISOString()} > Gitlab Trigger Plugin | Successfully trigger to execute pipeline job.`);
         }
     });
 };
@@ -66,13 +68,14 @@ const cancelJob = (opt, { pipelineProject }, gitlabJobId) => {
         }
     }, (error, response) => {
         if (response.statusCode == 200) {
-            console.log('Successfully cancelled pipeline job.');
+            console.log(`${new Date().toISOString()} > Gitlab Trigger Plugin | Successfully cancelled pipeline job.`);
         }
     });
 };
 
 const trigger = (action, configuration, job) => {
     getManualJobId(configuration.options, action, job, (data) => {
+        console.log(`${new Date().toISOString()} > Gitlab Trigger Plugin | Performing pipeline ${action.method} trigger for ${job.pipelineProject}:${data.gitlabJobId}.`);
         if (action.method === 'play') {
             playJob(configuration.options, job, data.gitlabJobId);
         } else {

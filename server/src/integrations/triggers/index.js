@@ -24,18 +24,27 @@ const config = () => {
     return config;
 };
 
-const requiresTrigger = (configuration, status) => {
+const requiresTrigger = (configuration, pid, status) => {
     if (!configuration.enabled) return false;
-    return configuration.triggers[status] !== null;
+    return getTrigger(configuration, pid, status) !== null;
+};
+
+const getTrigger = (configuration, pid, status) => {
+    let projectTriggers = configuration.triggers[pid];
+    if(projectTriggers) {
+        return projectTriggers[status];
+    }
+
+    return null;
 };
 
 const run = (job, status) => {
     const configuration = config();
-    if (!requiresTrigger(configuration, status)) return;
+    if (!requiresTrigger(configuration, job.pid, status)) return;
 
     let plugin = require(`./${configuration.plugin}`);
-    let action = configuration.triggers[status];
-    plugin.trigger(action, configuration, job);
+    let action = getTrigger(configuration, job.pid, status);
+    plugin.trigger(action, configuration, job.pipeline);
 };
 
 module.exports.run = run;

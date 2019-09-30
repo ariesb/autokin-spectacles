@@ -2,6 +2,7 @@ help: ## This help.
 	echo "make build"
 
 build: ## Build apps and docker container
+	npm version patch
 	yarn build
 	cd web && yarn build
 	cd ..

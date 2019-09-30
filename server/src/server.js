@@ -49,6 +49,7 @@ app.get('*', (req, res) => {
 let instance = app.listen(port, () => {
     console.log(`Autokin Spectacles (${port})`);
     console.log(`Home: ${process.cwd()}`);
+    console.log('----------------------------------------------------------------------------------');
 });
 
 module.exports.instance = instance;

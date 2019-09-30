@@ -1,6 +1,6 @@
 # Autokin Spectacles
 # www.autokinjs.com
-FROM node:alpine
+FROM node:12-alpine
 
 RUN apk -v --update add nss jq curl 
 COPY build /etc/opt/spectacles

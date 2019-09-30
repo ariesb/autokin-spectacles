@@ -6,7 +6,6 @@ const express = require('express');
 const job = require('../lib/job');
 const project = require('../lib/project');
 const { slack } = require('../integrations/slack');
-const triggers = require('../integrations/triggers');
 
 const router = express.Router();
 const handle = (opt) => {
@@ -42,7 +41,7 @@ const handle = (opt) => {
             return;
         }
 
-        const feat = project.getFeature(fid);
+        const feat = project.getFeature(pid, fid);
         image.acted = {
             'by': who,
             'when': new Date().toISOString(),
@@ -70,18 +69,11 @@ const handle = (opt) => {
         // notifications
         if (jobInfo.result.pending === 0) {
             slack({ pid, fid, jid, job: jobInfo, acted: true });
-            runTriggers(jobInfo);
+            project.runTriggers(jobInfo);
         }
     });
 
     return router;
-};
-
-const runTriggers = (job) => {
-    if (job.pipeline && !project.hasPendingAcrossFeatures(job)) {
-        let status = job.result.failed > 0 ? 'failed' : 'passed';
-        triggers.run(job.pipeline, status);
-    }
 };
 
 module.exports.handle = handle;

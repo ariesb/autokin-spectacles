@@ -8,6 +8,8 @@
  *     -H "FEATUREID:mytestfeature"
  *     -H "JOBID:bz8dd6d34"
  *     -H "AUTHOR:ariesbe"
+ *     -H "PIPELINE_PROJECT:pipeline-project-id" 
+ *     -H "PIPELINEID:pipeline-id"
  *     -H "REF:http://autokinjs.com/builds/bz8dd6d34" 
  *      https://spectacles.autokinjs.com/api/upload
  */
@@ -28,10 +30,12 @@ const handle = (opt) => {
             pipeline_project: pipelineProject,  
             pipelineid: pipelineId
         } = req.headers;
-        console.log(req.headers);
+
         if (job.exists({ pid, fid, jid })) {
             return res.status(400).send('Job already exists.');
         }
+        
+        console.log(`${new Date().toISOString()} > New visual test uploaded by ${author} for ${jid} ${fid} ${jid}.`);
 
         project.makeIfNotExists(pid, fid);
         let source = req.files.snapshots;

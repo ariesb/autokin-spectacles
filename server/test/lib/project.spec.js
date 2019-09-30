@@ -180,7 +180,7 @@ describe('Autokin Spectacles: Library -> Project', () => {
 
         it('should be able to read feature data', () => {
             let readFileSyncStub = sinon.stub(fs, 'readFileSync').returns('{}');
-            let data = project.getFeature('feature-id');
+            let data = project.getFeature('pid', 'feature-id');
             assert(readFileSyncStub.called);
             assert.deepEqual(data, {});
             readFileSyncStub.restore();
