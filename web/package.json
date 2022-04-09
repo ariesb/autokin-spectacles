@@ -7,7 +7,7 @@
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.14.0",
     "http-proxy-middleware": "^0.20.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "react": "^16.9.0",
     "react-cookie": "^4.0.1",
     "react-dom": "^16.9.0",
